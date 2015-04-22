@@ -11,14 +11,17 @@ module RedtubeApi
     end
 
     private
+
     def validate(response)
       return true if response['code'].nil? && response[:code].nil?
 
       error_codes = [1001, 1002, 1003, 2001, 2002, 3001, 3002, 3003]
 
       fail 'Unknown error code. Please contact the developer at' \
-        ' https://github.com/kkirsche/redtube_api/issues' \
-        unless error_codes.include? response['code'].to_i || error_codes.include? response[:code].to_i
+        ' https://github.com/kkirsche/redtube_api/issues' unless error_codes.include? response['code']
+
+      fail 'Unknown error code. Please contact the developer at' \
+        ' https://github.com/kkirsche/redtube_api/issues' unless error_codes.include? response[:code]
 
       fail 'No such method. Please contact the developer at' \
         ' https://github.com/kkirsche/redtube_api/issues' \
@@ -49,16 +52,21 @@ module RedtubeApi
     end
 
     def get(type, args, symbols, should_validate)
-      request_args = symbols.map { |sym| args[sym] unless args[sym.nil?] }
-      request_args[:data] = type
-      request_args[:output] = 'json'
-      response = JSON.parse(@client.get('', request_args).body)
-      validate response unless should_validate
+      request_args = { output: 'json', data: type }
+      symbols.map { |sym| request_args[sym] = args[sym] unless args[sym].nil? }
 
+      response = @client.get('/', request_args)
+      puts response.body
+      parsed_response = JSON.parse(response.body)
+
+      validate parsed_response unless should_validate
+      response
     end
 
-    def receive_should_validate?(args)
+    def receive_should_validate?(args = {})
       args[:should_validate] = true if args[:should_validate].nil?
+
+      args
     end
 
     def receive_video_id?(args)
@@ -74,6 +82,7 @@ module RedtubeApi
     end
 
     public
+
     # == Search Videos
     # The Search Videos API endpoint allows us to search for a video of your choice.
     #
@@ -82,7 +91,7 @@ module RedtubeApi
     #    videos = RedtubeApi::Client.new.search_videos category: 'Blowjobs', page: 2
     #
     def search_videos(args = {})
-      receive_should_validate? args
+      args = receive_should_validate? args
 
       get('redtube.Videos.searchVideos', args,
         [:category, :page, :search, :tags, :stars,
@@ -99,7 +108,7 @@ module RedtubeApi
     def get_video_by_id(args = {})
       receive_video_id? args
       receive_valid_thumbsize? args
-      receive_should_validate? args
+      args = receive_should_validate? args
 
       get('redtube.Videos.getVideoById', args,
         [:video_id, :thumbsize], args[:should_validate])
@@ -114,7 +123,7 @@ module RedtubeApi
     #
     def is_video_active(args = {})
       receive_video_id? args
-      receive_should_validate? args
+      args = receive_should_validate? args
 
       get('redtube.Videos.isVideoActive', args,
         [:video_id], args[:should_validate])
@@ -129,7 +138,7 @@ module RedtubeApi
     #
     def get_video_embed_code(args = {})
       receive_video_id? args
-      receive_should_validate? args
+      args = receive_should_validate? args
 
       get('redtube.Videos.getVideoEmbedCode', args,
           [:video_id], args[:should_validate])
@@ -146,7 +155,7 @@ module RedtubeApi
       fail ':page was either not detected or was not of type Integer.' \
       'Please provide an integer :page.' unless args[:page].is_a? Integer
 
-      receive_should_validate? args
+      args = receive_should_validate? args
 
       get('redtube.Videos.getDeletedVideos', args,
           [:page], args[:should_validate])
@@ -160,7 +169,7 @@ module RedtubeApi
     #    videos = RedtubeApi::Client.new.get_categories_list
     #
     def get_categories_list
-      receive_should_validate? args
+      args = receive_should_validate?
       get('redtube.Categories.getCategoriesList', {}, [], args[:should_validate])
     end
 
@@ -172,7 +181,7 @@ module RedtubeApi
     #    videos = RedtubeApi::Client.new.get_tag_list
     #
     def get_tag_list
-      receive_should_validate? args
+      args = receive_should_validate?
       get('redtube.Tags.getTagList', {}, [], args[:should_validate])
     end
 
@@ -184,7 +193,7 @@ module RedtubeApi
     #    videos = RedtubeApi::Client.new.get_star_list
     #
     def get_star_list
-      receive_should_validate? args
+      args = receive_should_validate?
       get('redtube.Stars.getStarList', {}, [], args[:should_validate])
     end
 
@@ -196,7 +205,7 @@ module RedtubeApi
     #    videos = RedtubeApi::Client.new.get_detailed_star_list
     #
     def get_detailed_star_list
-      receive_should_validate? args
+      args = receive_should_validate?
       get('redtube.Stars.getStarDetailedList', {}, [], args[:should_validate])
     end
   end
