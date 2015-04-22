@@ -2,8 +2,8 @@
 module RedtubeApi
   # Class is to withhold the information related to a RedTube video.
   class Video
-    attr_reader :size, :duration, :views, :video_id, :rating, :ratings, :title, :url, :embed_url,
-                :media, :publish_date,
+    attr_reader :size, :duration, :views, :video_id, :rating, :ratings, :title,
+                :url, :embed_url, :default_thumb, :thumb, :thumbs, :publish_date
     def initialization(config = {})
       @size = config[:size]
       @duration = config[:duration]
@@ -15,7 +15,7 @@ module RedtubeApi
       @url = config[:url]
       @embed_url = config[:embed_url]
       @default_thumb = config[:default_thumb]
-      @thumb = config[:thumb
+      @thumb = config[:thumb]
       @thumbs = config[:thumbs]
       @publish_date = config[:publish_date]
     end
@@ -40,7 +40,7 @@ module RedtubeApi
       @rating <= 1
     end
 
-    def arse?
+    def horrible?
       @rating == 0
     end
   end
