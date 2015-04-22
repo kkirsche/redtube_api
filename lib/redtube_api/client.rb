@@ -5,7 +5,7 @@ require 'json'
 module RedtubeApi
   # Client for interacting with RedTube API
   class Client
-    def initialization
+    def initialize
       @client = Hurley::Client.new 'http://api.redtube.com/'
       self
     end
